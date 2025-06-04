@@ -116,19 +116,27 @@ for k in range(steps):
 # ───────────────────────────────────────────────
 # 4) 描画
 # ───────────────────────────────────────────────
+# TeXを使用する設定
+# plt.rcParams['text.usetex'] = True
+
 plt.figure(figsize=(9,4))
 plt.plot(t_log, th_log, label=r'$\hat\theta_{est}$')
-plt.plot(t_log, th_true_log, label=r'$\hat\theta_{t}$')
-plt.ylabel('Electrical angle [deg]')
-plt.xlabel('Time [s]')
-plt.title('Phase tracking with IQ demod + Rs & cross terms')
+plt.plot(t_log, th_true_log, label=r'$\theta_{true}$')
+
+
+plt.xlabel(r'$Time [s]$')  # r'...' はraw文字列で、バックスラッシュのエスケープを防ぐ
+plt.ylabel(r'Electrical angle [$^\circ$]') # 角度記号をTeXで記述
+plt.title(r'Phase tracking with IQ demod + R$_s$ & cross terms') # 下付き文字や'&'のエスケープ
+# plt.ylabel('Electrical angle [deg]')
+# plt.xlabel('Time [s]')
+# plt.title('Phase tracking with IQ demod + Rs & cross terms')
 plt.grid(); plt.legend()
 
 plt.figure(figsize=(9,4))
 plt.plot(t_log, err_deg_log)
-plt.ylabel('Phase error [deg]')
-plt.xlabel('Time [s]')
-plt.title('Phase error convergence')
+plt.ylabel(r'$Phase\;error\;[deg]$')
+plt.xlabel(r'$Time [s]$')  # r'...' はraw文字列で、バックスラッシュのエスケープを防ぐ
+plt.title(r'Phase error convergence')
 plt.grid()
 
 plt.tight_layout()
