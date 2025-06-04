@@ -15,7 +15,7 @@ Ts   = 1/6000*2              # サンプリング周期 [s]
 Tend = 0.05              # 解析時間 [s]
 
 # PLL ゲイン
-Kp = 600.0
+Kp = 600.0*1
 Ki = 8e5*1                 # Ki ≠ 0 で定常誤差を除去
 
 tau_lpf = 1e-4*2           # 復調 LPF 時定数 [s]
@@ -23,7 +23,11 @@ alpha_lpf = Ts / (tau_lpf + Ts)
 
 # 真値
 theta_true = 0.0         # 定常角
-omega_true = 5.0         # 速度 0  (≠0 にしても可)
+rpm = 2000 #[rpm]
+Pn = 4 #Motor Pole
+omega_true = rpm / 60 * (2*np.pi) * Pn
+# omega_true = 100.0         # 速度 0  (≠0 にしても可)
+print(omega_true)
 
 # 推定初期値を -70° に
 theta_est = np.deg2rad(30)
@@ -111,7 +115,9 @@ for k in range(steps):
     th_log.append(theta_est_deg)
 
     th_true_log.append(np.rad2deg(theta_true))
-    err_deg_log.append(np.rad2deg(theta_est - theta_true))
+    th_diff = theta_est - theta_true
+    th_diff = wrap(th_diff)
+    err_deg_log.append(np.rad2deg(th_diff))
 
 # ───────────────────────────────────────────────
 # 4) 描画
