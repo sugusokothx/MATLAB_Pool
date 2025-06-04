@@ -16,17 +16,17 @@ Tend = 0.05              # 解析時間 [s]
 
 # PLL ゲイン
 Kp = 600.0
-Ki = 8e5                 # Ki ≠ 0 で定常誤差を除去
+Ki = 8e5*1                 # Ki ≠ 0 で定常誤差を除去
 
 tau_lpf = 1e-4*2           # 復調 LPF 時定数 [s]
 alpha_lpf = Ts / (tau_lpf + Ts)
 
 # 真値
 theta_true = 0.0         # 定常角
-omega_true = 0.0         # 速度 0  (≠0 にしても可)
+omega_true = 5.0         # 速度 0  (≠0 にしても可)
 
 # 推定初期値を -70° に
-theta_est = np.deg2rad(-70)
+theta_est = np.deg2rad(30)
 omega_est = 0.0
 
 # ───────────────────────────────────────────────
@@ -50,7 +50,7 @@ ih_c_alpha = ih_c_beta = 0.0
 
 int_err = 0.0               # PI 積分
 
-t_log, th_log, err_deg_log = [], [], []
+t_log, th_log, err_deg_log , th_true_log= [], [], [], []
 
 # ───────────────────────────────────────────────
 # 3) ループ
@@ -92,16 +92,25 @@ for k in range(steps):
 
     # === (4) PLL (PI) ===
     err = Ih_delta
-    int_err += err * Ts
-    omega_est = Kp * err + Ki * int_err
+    int_err += err * Ts # 積分器の入力は誤差そのもの
+    omega_est = Kp * err + Ki * int_err # PLLの出力が推定角速度
 
     # === (5) 位相推定 ===
-    theta_est += omega_est * Ts
+    theta_est += omega_est * Ts # 推定角速度でtheta_estを更新
     theta_est = wrap(theta_est)
+
+
+    # === (0) 真の電気角更新 ===
+    theta_true += omega_true * Ts
+    theta_true = wrap(theta_true) # 角度を -pi から pi の範囲に収める
 
     # === ログ ===
     t_log.append(t)
-    th_log.append(theta_est)
+ 
+    theta_est_deg = np.rad2deg(theta_est)
+    th_log.append(theta_est_deg)
+
+    th_true_log.append(np.rad2deg(theta_true))
     err_deg_log.append(np.rad2deg(theta_est - theta_true))
 
 # ───────────────────────────────────────────────
@@ -109,8 +118,8 @@ for k in range(steps):
 # ───────────────────────────────────────────────
 plt.figure(figsize=(9,4))
 plt.plot(t_log, th_log, label=r'$\hat\theta_{est}$')
-plt.axhline(theta_true, color='k', linestyle='--', label=r'$\theta_{true}$')
-plt.ylabel('Electrical angle [rad]')
+plt.plot(t_log, th_true_log, label=r'$\hat\theta_{t}$')
+plt.ylabel('Electrical angle [deg]')
 plt.xlabel('Time [s]')
 plt.title('Phase tracking with IQ demod + Rs & cross terms')
 plt.grid(); plt.legend()
