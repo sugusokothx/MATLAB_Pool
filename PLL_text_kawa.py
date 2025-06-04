@@ -4,21 +4,21 @@ import matplotlib.pyplot as plt
 # ───────────────────────────────────────────────
 # 0) パラメータ設定
 # ───────────────────────────────────────────────
-Va   = 20.0          # HF 電圧振幅 [V]
+Va   = 25.0          # HF 電圧振幅 [V]
 f_h  = 1000.0        # HF 周波数 [Hz]
 omega_h = 2*np.pi*f_h
 
 Ld, Lq = 1e-3, 1.4e-3    # d/q インダクタンス [H]
 R_s   = 0.03              # ステータ抵抗 [Ω]
 
-Ts   = 1e-6              # サンプリング周期 [s]
-Tend = 0.5              # 解析時間 [s]
+Ts   = 1/6000*2              # サンプリング周期 [s]
+Tend = 0.05              # 解析時間 [s]
 
 # PLL ゲイン
-Kp = 100
-Ki = 1000                 # Ki ≠ 0 で定常誤差を除去
+Kp = 600.0
+Ki = 8e5                 # Ki ≠ 0 で定常誤差を除去
 
-tau_lpf = 1e-8           # 復調 LPF 時定数 [s]
+tau_lpf = 1e-4*2           # 復調 LPF 時定数 [s]
 alpha_lpf = Ts / (tau_lpf + Ts)
 
 # 真値
@@ -26,7 +26,7 @@ theta_true = 0.0         # 定常角
 omega_true = 0.0         # 速度 0  (≠0 にしても可)
 
 # 推定初期値を -70° に
-theta_est = np.deg2rad(-30)
+theta_est = np.deg2rad(-70)
 omega_est = 0.0
 
 # ───────────────────────────────────────────────
@@ -50,7 +50,7 @@ ih_c_alpha = ih_c_beta = 0.0
 
 int_err = 0.0               # PI 積分
 
-t_log, th_log, err_deg_log, i_delta_log, i_gamma_log = [], [], [], [], []
+t_log, th_log, err_deg_log = [], [], []
 
 # ───────────────────────────────────────────────
 # 3) ループ
@@ -66,10 +66,8 @@ for k in range(steps):
 
     # === (2) dq 電流モデル (Euler, Rs & クロスターム有り) ===
     V_d, V_q = rot(-theta_true, np.array([V_alpha, V_beta]))
-    dId = (1/Ld)*(V_d)
-    dIq = (1/Lq)*(V_q)
-    # dId = (1/Ld)*(V_d - R_s*Id + omega_true*Lq*Iq)
-    # dIq = (1/Lq)*(V_q - R_s*Iq - omega_true*Ld*Id)    
+    dId = (1/Ld)*(V_d - R_s*Id + omega_true*Lq*Iq)
+    dIq = (1/Lq)*(V_q - R_s*Iq - omega_true*Ld*Id)
     Id += dId * Ts
     Iq += dIq * Ts
     I_alpha, I_beta = rot(theta_true, np.array([Id, Iq]))
@@ -78,7 +76,7 @@ for k in range(steps):
     sin_ref = np.sin(omega_h * t)
     cos_ref = np.cos(omega_h * t)
 
-    # In‑phase (sin) branchA
+    # In‑phase (sin) branch
     ih_s_alpha += alpha_lpf * (I_alpha * sin_ref - ih_s_alpha)
     ih_s_beta  += alpha_lpf * (I_beta  * sin_ref - ih_s_beta)
     # Quadrature (cos) branch
@@ -102,8 +100,6 @@ for k in range(steps):
     theta_est = wrap(theta_est)
 
     # === ログ ===
-    i_delta_log.append(Ih_delta)
-    i_gamma_log.append(Ih_gamma)
     t_log.append(t)
     th_log.append(theta_est)
     err_deg_log.append(np.rad2deg(theta_est - theta_true))
@@ -124,20 +120,6 @@ plt.plot(t_log, err_deg_log)
 plt.ylabel('Phase error [deg]')
 plt.xlabel('Time [s]')
 plt.title('Phase error convergence')
-plt.grid()
-
-# plt.figure(figsize=(9,4))
-# plt.plot(t_log, i_delta_log)
-# plt.ylabel('i_delta [A]')
-# plt.xlabel('Time [s]')
-# plt.title('delta current')
-# plt.grid()
-
-plt.figure(figsize=(9,4))
-plt.plot(t_log, i_gamma_log)
-plt.ylabel('i_gamma [A]')
-plt.xlabel('Time [s]')
-plt.title('gamma current')
 plt.grid()
 
 plt.tight_layout()

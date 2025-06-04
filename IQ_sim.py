@@ -55,7 +55,7 @@ class IQDemodulator:
         sin_ref = np.sin(self.ωh * t)
         cos_ref = np.cos(self.ωh * t)
 
-        # ── sin 枝 ──A
+        # ── sin 枝 ──
         self._lpf_s_α = self._lpf(self._lpf_s_α, Iα * sin_ref)
         self._lpf_s_β = self._lpf(self._lpf_s_β, Iβ * sin_ref)
 
@@ -85,16 +85,10 @@ if __name__ == "__main__":
     Tsim = 2e-3
 
     demod = IQDemodulator(ωh, Ts, tau_lpf=1e-4, mode="complex")
-    t_vals, amp_vals = [], []
+
     for k in range(int(Tsim / Ts)):
         t  = k * Ts
         Iα = 0.4 * np.sin(ωh*t + 0.3)
         Iβ = 0.4 * np.cos(ωh*t + 0.3)
         Ih = demod.update(Iα, Iβ, t)
         # print(Ih)  # テキスト出力や可視化はお好みで
-        t_vals.append(t)
-        amp_vals.append(np.abs(Ih))          # 振幅で確認
-
-    # コマンドラインテストなら matplotlib で可視化しても OK
-    import matplotlib.pyplot as plt
-    plt.plot(t_vals, amp_vals); plt.show()
