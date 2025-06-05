@@ -62,3 +62,36 @@ $$
 $$
 I_\delta = -I_{h\alpha} \sin\theta_{h,e} + I_{h\beta} \cos\theta_{h,e}
 $$
+
+
+
+数式の由来 高周波電流ベクトルを複素数
+
+$I_{h,\alpha\beta}=I_{h\alpha}+jI_{h\beta}$
+
+で表し，回転子座標系（$\gamma\delta$）に写像するには
+
+$I_{h,\gamma\delta} = I_{h,\alpha\beta}e^{-j\theta_e}$
+
+が用いられる。ここで $\theta_e$ は電気角であり
+
+$e^{-j\theta_e}=\cos\theta_e-j\sin\theta_e$。
+複素積を展開すると
+
+$$
+\begin{aligned}
+I_{h,\gamma\delta}
+&=(I_{h\alpha}+jI_{h\beta})(\cos\theta_e-j\sin\theta_e) \\
+&=\bigl(I_{h\alpha}\cos\theta_e+I_{h\beta}\sin\theta_e\bigr)
+ \;+\;j\bigl(-I_{h\alpha}\sin\theta_e+I_{h\beta}\cos\theta_e\bigr).
+\end{aligned}
+$$
+
+よって
+
+$\gamma$ 軸成分（実部）
+
+$I_\gamma = I_{h\alpha}\cos\theta_e + I_{h\beta}\sin\theta_e$
+$\delta$ 軸成分（虚部）
+
+$I_\delta = -I_{h\alpha}\sin\theta_e + I_{h\beta}\cos\theta_e$

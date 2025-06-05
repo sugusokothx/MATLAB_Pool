@@ -80,19 +80,33 @@ for k in range(steps):
     sin_ref = np.sin(omega_h * t)
     cos_ref = np.cos(omega_h * t)
 
-    # In‑phase (sin) branch
-    ih_s_alpha += alpha_lpf * (I_alpha * sin_ref - ih_s_alpha)
-    ih_s_beta  += alpha_lpf * (I_beta  * sin_ref - ih_s_beta)
-    # Quadrature (cos) branch
-    ih_c_alpha += alpha_lpf * (I_alpha * cos_ref - ih_c_alpha)
-    ih_c_beta  += alpha_lpf * (I_beta  * cos_ref - ih_c_beta)
+    # --- I/Q demod (complex) ---
+    ih_s_alpha += alpha_lpf * (I_alpha *  sin_ref - ih_s_alpha)  # Iチャネル
+    ih_c_alpha += alpha_lpf * (I_alpha *  cos_ref - ih_c_alpha)  # Qチャネル
+    ih_s_beta  += alpha_lpf * (I_beta  *  sin_ref - ih_s_beta)
+    ih_c_beta  += alpha_lpf * (I_beta  *  cos_ref - ih_c_beta)
 
-    # sin², cos² の平均 0.5 を補正 → ×2
-    Ih_alpha = 2 * ih_s_alpha   # ここでは sin 分のみ使用
-    Ih_beta  = 2 * ih_s_beta
+    # ×2 して実数部＝I, 虚数部＝Q の複素電流
+    Ih_alpha = 2*(ih_s_alpha + 1j*ih_c_alpha)
+    Ih_beta  = 2*(ih_s_beta  + 1j*ih_c_beta)
 
-    # αβ → γδ
-    Ih_gamma, Ih_delta = rot(-theta_est, np.array([Ih_alpha, Ih_beta]))
+    # 固定 → γδ （複素ごと回転させても OK）
+    Ih_gamma, Ih_delta = rot(-theta_est, np.array([Ih_alpha, Ih_beta]).real)  # 実数部でOK
+
+
+    # # In‑phase (sin) branch
+    # ih_s_alpha += alpha_lpf * (I_alpha * sin_ref - ih_s_alpha)
+    # ih_s_beta  += alpha_lpf * (I_beta  * sin_ref - ih_s_beta)
+    # # Quadrature (cos) branch
+    # ih_c_alpha += alpha_lpf * (I_alpha * cos_ref - ih_c_alpha)
+    # ih_c_beta  += alpha_lpf * (I_beta  * cos_ref - ih_c_beta)
+
+    # # sin², cos² の平均 0.5 を補正 → ×2
+    # Ih_alpha = 2 * ih_s_alpha   # ここでは sin 分のみ使用
+    # Ih_beta  = 2 * ih_s_beta
+
+    # # αβ → γδ
+    # Ih_gamma, Ih_delta = rot(-theta_est, np.array([Ih_alpha, Ih_beta]))
 
     # === (4) PLL (PI) ===
     err = Ih_delta
